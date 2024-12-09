@@ -3,26 +3,30 @@
       <div class="modal-overlay">
         <div class="modal-content">
           <h2>Register</h2>
-          <form>
+          <form @submit.prevent="handleSubmit">
             <div class="form-group">
               <label for="username">Username:</label>
               <input type="text" id="username"  v-model="username" required>
+              <span v-if="errors?.username">{{ errors.username[0] }}</span>
             </div>
             <div class="form-group">
               <label for="email">Email:</label>
               <input type="email" id="email" v-model="email" required>
+              <span v-if="errors?.email">{{ errors.email[0] }}</span>
             </div>
             <div class="form-group">
               <label for="password">Password:</label>
               <input type="password" id="password" v-model="password" required>
+              <span v-if="errors?.password">{{  errors.password[0] }}</span>
             </div>
             <div class="form-group">
               <label for="confirm-password">Confirm Password:</label>
-              <input type="password" id="confirm-password" required>
+              <input type="password" id="confirm-password" v-model="confirmPassword" required>
+              <span v-if="errors?.confirmPassword">{{  errors.confirmPassword[0] }}</span>
             </div>
             <div class="form-actions">
-              <button type="submit">Register</button>
-              <button type="button" @click="$emit('close')">Close</button>
+              <button type="submit" class="btn btn-primary">Register</button>
+              <button type="button" class="btn btn-secondary" @click="$emit('close')">Close</button>
             </div>
           </form>
         </div>
@@ -30,6 +34,42 @@
     </Transition>
   </template>
   <script setup>
+import axios from 'axios'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const email = ref('')
+const username = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+
+const errors = ref({})
+const sucess = ref('')
+
+
+const handleSubmit = async () => {
+  if (password.value !== confirmPassword.value) {
+    errors.value = { confirmPassword: ['Password do not match']}
+    return
+  }
+  errors.value = {}
+  axios.put('/api/registration', {
+    email: email.value,
+    username: username.value,
+    password: password.value
+  })
+      .then(response => {
+        sucess.value = response.data.message
+        router.push('/dashboard')
+        })
+      .catch(error => {
+        if (error.response.status === 422) {
+          errors.value = error.response.data.errors
+        }
+        })
+};
 defineEmits(['close'])
  
 </script>

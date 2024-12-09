@@ -68,5 +68,9 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+  @font-face {
+    font-family: gothic;
+    src: url ("C:\Users\andre\OneDrive\Documents\GitHub\ProjetoRPG-Frontend\RPGProject-Frontend\src\assets\fonts\KingsAndPirates-p7EAK.ttf")
+  }
 }
 </style>

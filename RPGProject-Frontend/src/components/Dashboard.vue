@@ -1,90 +1,229 @@
+<template>
+  <div class="dashboard">
+    <div class="content">
+      <header>
+        <h1>Character Dashboard</h1>
+      </header>
+      <main>
+        <section class="character-carousel">
+          <h2>Your Characters</h2>
+          <div v-if="characters.length > 0" class="carousel">
+            <button @click="prevCharacter" class="carousel-btn prev" aria-label="Previous character">
+              <ChevronLeft class="h-6 w-6" />
+            </button>
+            <div class="character-card">
+              <h3>{{ currentCharacter.name }}</h3>
+              <p>Level: {{ currentCharacter.level }}</p>
+              <p>XP: {{ currentCharacter.xp }}</p>
+              <p>Class: {{ currentCharacter.class }}</p>
+              <button @click="accessCharacter(currentCharacter.id)" class="btn btn-secondary">
+                Access Character
+              </button>
+            </div>
+            <button @click="nextCharacter" class="carousel-btn next" aria-label="Next character">
+              <ChevronRight class="h-6 w-6" />
+            </button>
+          </div>
+          <div v-else class="no-characters">
+            <p>You don't have any characters yet.</p>
+            <button @click="navigateToCharacterCreation" class="btn btn-primary">
+              Create New Character
+            </button>
+          </div>
+        </section>
+        <section v-if="characters.length > 0" class="create-character">
+          <button @click="navigateToCharacterCreation" class="btn btn-primary">
+            Create New Character
+          </button>
+        </section>
+      </main>
+    </div>
+  </div>
+</template>
+
 <script setup>
-import WelcomeItem from './CharacterCreation.vue'
-import DocumentationIcon from './icons/IconDocumentation.vue'
-import ToolingIcon from './icons/IconTooling.vue'
-import EcosystemIcon from './icons/IconEcosystem.vue'
-import CommunityIcon from './icons/IconCommunity.vue'
-import SupportIcon from './icons/IconSupport.vue'
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+
+const router = useRouter();
+
+const characters = ref([
+  { id: 1, name: 'Eldrin the Wise', level: 5, xp: 2500, class: 'Wizard' },
+  { id: 2, name: 'Thora Ironheart', level: 3, xp: 1200, class: 'Warrior' },
+  { id: 3, name: 'Zephyr Swiftwind', level: 4, xp: 1800, class: 'Rogue' },
+  { id: 4, name: 'Grimlock the Destroyer', level: 6, xp: 3500, class: 'Barbarian' },
+]);
+
+const currentIndex = ref(0);
+
+const currentCharacter = computed(() => characters.value[currentIndex.value]);
+
+const nextCharacter = () => {
+  currentIndex.value = (currentIndex.value + 1) % characters.value.length;
+};
+
+const prevCharacter = () => {
+  currentIndex.value = (currentIndex.value - 1 + characters.value.length) % characters.value.length;
+};
+
+const navigateToCharacterCreation = () => {
+  router.push('/character-creation');
+};
+
+const accessCharacter = (id) => {
+  router.push(`/character/${id}`);
+};
 </script>
 
-<template>
-  <WelcomeItem>
-    <template #icon>
-      <DocumentationIcon />
-    </template>
-    <template #heading>Documentation</template>
+<style scoped>
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+  font-family: 'Metamorphous', cursive;
+}
 
-    Vue’s
-    <a href="https://vuejs.org/" target="_blank" rel="noopener">official documentation</a>
-    provides you with all information you need to get started.
-  </WelcomeItem>
+.content {
+  width: 100%;
+  max-width: 800px;
+  padding: 2rem;
+}
 
-  <WelcomeItem>
-    <template #icon>
-      <ToolingIcon />
-    </template>
-    <template #heading>Tooling</template>
+header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
 
-    This project is served and bundled with
-    <a href="https://vite.dev/guide/features.html" target="_blank" rel="noopener">Vite</a>. The
-    recommended IDE setup is
-    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VSCode</a>
-    +
-    <a href="https://github.com/johnsoncodehk/volar" target="_blank" rel="noopener">Volar</a>. If
-    you need to test your components and web pages, check out
-    <a href="https://www.cypress.io/" target="_blank" rel="noopener">Cypress</a>
-    and
-    <a href="https://on.cypress.io/component" target="_blank" rel="noopener"
-      >Cypress Component Testing</a
-    >.
+h1 {
+  font-size: 3rem;
+  color: var(--accent-red);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: 'Oswald';
+}
 
-    <br />
+h2 {
+  font-size: 2rem;
+  color: var(--accent-red);
+  margin-bottom: 1rem;
+  font-family: 'Oswald';
+  text-align: center;
+}
 
-    More instructions are available in <code>README.md</code>.
-  </WelcomeItem>
+.character-carousel {
+  background-color: rgba(10, 0, 0, 0.7);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(139, 0, 0, 0.3);
+  margin-bottom: 2rem;
+}
 
-  <WelcomeItem>
-    <template #icon>
-      <EcosystemIcon />
-    </template>
-    <template #heading>Ecosystem</template>
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-    Get official tools and libraries for your project:
-    <a href="https://pinia.vuejs.org/" target="_blank" rel="noopener">Pinia</a>,
-    <a href="https://router.vuejs.org/" target="_blank" rel="noopener">Vue Router</a>,
-    <a href="https://test-utils.vuejs.org/" target="_blank" rel="noopener">Vue Test Utils</a>, and
-    <a href="https://github.com/vuejs/devtools" target="_blank" rel="noopener">Vue Dev Tools</a>. If
-    you need more resources, we suggest paying
-    <a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">Awesome Vue</a>
-    a visit.
-  </WelcomeItem>
+.character-card {
+  background-color: rgba(26, 0, 0, 0.5);
+  border: 1px solid var(--accent-red);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  flex-grow: 1;
+  margin: 0 1rem;
+}
 
-  <WelcomeItem>
-    <template #icon>
-      <CommunityIcon />
-    </template>
-    <template #heading>Community</template>
+.character-card h3 {
+  font-size: 1.5rem;
+  color: var(--accent-red);
+  margin-bottom: 1rem;
+}
 
-    Got stuck? Ask your question on
-    <a href="https://chat.vuejs.org" target="_blank" rel="noopener">Vue Land</a>, our official
-    Discord server, or
-    <a href="https://stackoverflow.com/questions/tagged/vue.js" target="_blank" rel="noopener"
-      >StackOverflow</a
-    >. You should also subscribe to
-    <a href="https://news.vuejs.org" target="_blank" rel="noopener">our mailing list</a>
-    and follow the official
-    <a href="https://twitter.com/vuejs" target="_blank" rel="noopener">@vuejs</a>
-    twitter account for latest news in the Vue world.
-  </WelcomeItem>
+.character-card p {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
 
-  <WelcomeItem>
-    <template #icon>
-      <SupportIcon />
-    </template>
-    <template #heading>Support Vue</template>
+.carousel-btn {
+  background-color: transparent;
+  border: none;
+  color: var(--accent-red);
+  cursor: pointer;
+  font-size: 2rem;
+  transition: all 0.3s ease;
+}
 
-    As an independent project, Vue relies on community backing for its sustainability. You can help
-    us by
-    <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener">becoming a sponsor</a>.
-  </WelcomeItem>
-</template>
+.carousel-btn:hover {
+  color: var(--text-light);
+  transform: scale(1.1);
+}
+
+.no-characters {
+  text-align: center;
+}
+
+.create-character {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-family: 'Metamorphous', cursive;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-primary {
+  background-color: var(--accent-red);
+  color: var(--text-light);
+  box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--accent-red);
+  border: 2px solid var(--accent-red);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(139, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  .character-carousel {
+    padding: 1rem;
+  }
+
+  .carousel {
+    flex-direction: column;
+  }
+
+  .carousel-btn {
+    margin: 1rem 0;
+  }
+
+  .character-card {
+    margin: 1rem 0;
+  }
+}
+</style>

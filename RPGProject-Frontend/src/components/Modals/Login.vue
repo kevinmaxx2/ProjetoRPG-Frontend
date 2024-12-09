@@ -2,15 +2,23 @@
     <Transition name="LoginModal">
       <div class="modal-overlay">
         <div class="modal-content">
+          <div v-if="sucess" class="sucess-message">
+            {{ sucess }}
+            </div>
           <h2>Login</h2>
           <form @submit.prevent="handleSubmit">
             <div class="form-group">
               <label for="email">Email:</label>
               <input type="email" id="email"  v-model="email" required>
+              <span v-if="errors?.email">{{ errors.email[0] }}</span>
             </div>
             <div class="form-group">
               <label for="password">Password:</label>
               <input type="password" id="password" v-model="password" required>
+              <span v-if="errors?.password">{{  errors.password[0] }}</span>
+            </div>
+            <div class="form-group">
+              <
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Login</button>
@@ -23,7 +31,33 @@
   </template>
 
 <script setup>
-      defineEmits(['close'])
+import axios from 'axios'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const email = ref('')
+const password = ref('')
+const errors = ref({})
+const success = ref('')
+
+const form = reactive({
+  email: email.value,
+  password: password.value
+})
+const handleSubmit = async () => {
+  axios.post('/api/login', form)
+        .then(response => {
+          success.value = response.data.message
+          router.push('/dashboard')
+        })
+        .catch(error => {
+          if (error.response.status === 422) {
+            errors.value = error.response.data.errors
+          }
+        })
+      };
+defineEmits(['close'])
 </script>
 
 <style scoped>
