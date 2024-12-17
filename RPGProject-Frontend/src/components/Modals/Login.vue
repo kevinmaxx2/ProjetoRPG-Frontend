@@ -34,6 +34,7 @@
 import axios from 'axios'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { axiosInstance } from '@/axios';
 
 const router = useRouter()
 const email = ref('')
@@ -41,12 +42,13 @@ const password = ref('')
 const errors = ref({})
 const success = ref('')
 
-const form = reactive({
-  email: email.value,
-  password: password.value
-})
 const handleSubmit = async () => {
-  axios.post('/api/login', form)
+  console.log('Request config:', {
+  url: '/api/login',
+  method: 'post',
+  data: { email: email.value, password: password.value }
+});
+  axiosInstance.post('/api/login', {email: email.value, password: password.value})
         .then(response => {
           success.value = response.data.message
           router.push('/dashboard')

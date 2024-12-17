@@ -5,11 +5,6 @@
           <h2>Register</h2>
           <form @submit.prevent="handleSubmit">
             <div class="form-group">
-              <label for="username">Username:</label>
-              <input type="text" id="username"  v-model="username" required>
-              <span v-if="errors?.username">{{ errors.username[0] }}</span>
-            </div>
-            <div class="form-group">
               <label for="email">Email:</label>
               <input type="email" id="email" v-model="email" required>
               <span v-if="errors?.email">{{ errors.email[0] }}</span>
@@ -37,11 +32,11 @@
 import axios from 'axios'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { axiosInstance } from '@/axios';
 
 const router = useRouter()
 
 const email = ref('')
-const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
@@ -55,10 +50,10 @@ const handleSubmit = async () => {
     return
   }
   errors.value = {}
-  axios.put('/api/registration', {
+  axiosInstance.post('/api/user/register', {
     email: email.value,
-    username: username.value,
-    password: password.value
+    password: password.value,
+    password_confirmation: confirmPassword.value
   })
       .then(response => {
         sucess.value = response.data.message
