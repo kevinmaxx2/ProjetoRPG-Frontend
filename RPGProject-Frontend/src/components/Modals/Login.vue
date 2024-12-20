@@ -2,8 +2,8 @@
     <Transition name="LoginModal">
       <div class="modal-overlay">
         <div class="modal-content">
-          <div v-if="sucess" class="sucess-message">
-            {{ sucess }}
+          <div v-if="success" class="success-message">
+            {{ success }}
             </div>
           <h2>Login</h2>
           <form @submit.prevent="handleSubmit">
@@ -43,23 +43,28 @@ const errors = ref({})
 const success = ref('')
 
 const handleSubmit = async () => {
-  console.log('Request config:', {
-  url: '/api/login',
-  method: 'post',
-  data: { email: email.value, password: password.value }
-});
-  axiosInstance.post('/api/login', {email: email.value, password: password.value})
-        .then(response => {
-          success.value = response.data.message
-          router.push('/dashboard')
-        })
-        .catch(error => {
-          if (error.response.status === 422) {
-            errors.value = error.response.data.errors
-          }
-        })
-      };
+  try {
+    
+    await axiosInstance.get('/sanctum/csrf-cookie');
+
+    
+    const response = await axiosInstance.post('/login', {
+      email: email.value,
+      password: password.value
+    });
+
+    
+    success.value = 'Login successful';
+    router.push('/dashboard');
+  } catch (error) {
+    if (error.response?.status === 422) {
+      errors.value = error.response.data.errors || 
+                     { credentials: ['Invalid login credentials'] };
+    }
+  }
+};
 defineEmits(['close'])
+
 </script>
 
 <style scoped>

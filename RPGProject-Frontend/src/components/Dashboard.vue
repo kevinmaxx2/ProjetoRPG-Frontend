@@ -3,6 +3,9 @@
     <div class="content">
       <header>
         <h1>Character Dashboard</h1>
+        <button @click="handleLogout" class="btn btn-logout">
+          Logout
+        </button>
       </header>
       <main>
         <section class="character-carousel">
@@ -35,16 +38,21 @@
           <button @click="navigateToCharacterCreation" class="btn btn-primary">
             Create New Character
           </button>
+
         </section>
       </main>
     </div>
   </div>
+
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { axiosInstance } from '@/axios';
+
+const error = ref('');
 
 const router = useRouter();
 
@@ -74,6 +82,15 @@ const navigateToCharacterCreation = () => {
 const accessCharacter = (id) => {
   router.push(`/character/${id}`);
 };
+const handleLogout = async () => {
+  try {
+    const response = await axiosInstance.post('/api/logout');
+    router.push('/')
+  } catch (err) {
+    error.value = 'Failed to logout. Please try again.';
+    console.error('Logout error:', err);
+  }
+};
 </script>
 
 <style scoped>
@@ -97,6 +114,9 @@ const accessCharacter = (id) => {
 header {
   margin-bottom: 2rem;
   text-align: center;
+  align-items: center;
+  justify-content: space-between;
+  display: flex;
 }
 
 h1 {
@@ -104,6 +124,7 @@ h1 {
   color: var(--accent-red);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   font-family: 'Oswald';
+  margin: 0;
 }
 
 h2 {
@@ -200,8 +221,23 @@ h2 {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(139, 0, 0, 0.5);
 }
-
+.btn-logout {
+  background-color: transparent;
+  color: var(--accent-red);
+  border: 2px solid var(--accent-red);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+.btn-logout:hover {
+  background-color: var(--accent-red);
+  color: var(--text-light);
+}
 @media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 1rem;
+  }
   .content {
     padding: 1rem;
   }
@@ -224,6 +260,9 @@ h2 {
 
   .character-card {
     margin: 1rem 0;
+  }
+  .btn-logout {
+    width: 100%;
   }
 }
 </style>
