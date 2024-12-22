@@ -3,10 +3,10 @@ import axios from 'axios';
 export const axiosInstance = axios.create({
     baseURL: 'http://127.0.0.1:8000',
     withCredentials: true,
-    withXSRFToken: true,
     headers: {
         'Content-Type' : 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
     }
 });
 axiosInstance.interceptors.request.use(function (config) {

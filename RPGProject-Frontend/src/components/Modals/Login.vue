@@ -44,22 +44,31 @@ const success = ref('')
 
 const handleSubmit = async () => {
   try {
-    
     await axiosInstance.get('/sanctum/csrf-cookie');
 
-    
+    const token = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('XSRF-TOKEN'))
+    ?.split('=')[1];
+
+    if (token) {
+      axiosInstance.defaults.headers.common['X-XSRF-TOKEN'] = decodeURIComponent(token);
+    }
     const response = await axiosInstance.post('/api/login', {
       email: email.value,
       password: password.value
     });
-
-    
     success.value = 'Login successful';
     router.push('/dashboard');
   } catch (error) {
+    console.error('Login error:', error);
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors || 
                      { credentials: ['Invalid login credentials'] };
+    } else if (error.response?.status === 419) {
+      errors.value = { csrf: ['CSRF token mismatch. Please try again.'] };
+    } else {
+      errors.value = { general: ['An unexpected error occurred. Please try again.'] };
     }
   }
 };
