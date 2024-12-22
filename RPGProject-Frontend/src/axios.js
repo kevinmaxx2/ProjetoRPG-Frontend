@@ -9,6 +9,13 @@ export const axiosInstance = axios.create({
         'Accept': 'application/json'
     }
 });
+axiosInstance.interceptors.request.use(function (config) {
+    const token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN'))?.split('=')[1];
+    if (token) {
+        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
+    }
+    return config;
+});
 axiosInstance.interceptors.response.use(
     response => response,
     error => {

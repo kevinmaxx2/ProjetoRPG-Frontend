@@ -48,7 +48,7 @@ const handleSubmit = async () => {
     await axiosInstance.get('/sanctum/csrf-cookie');
 
     
-    const response = await axiosInstance.post('/login', {
+    const response = await axiosInstance.post('/api/login', {
       email: email.value,
       password: password.value
     });
