@@ -44,16 +44,7 @@ const success = ref('')
 
 const handleSubmit = async () => {
   try {
-    await axiosInstance.get('/sanctum/csrf-cookie');
-
-    const token = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('XSRF-TOKEN'))
-    ?.split('=')[1];
-
-    if (token) {
-      axiosInstance.defaults.headers.common['X-XSRF-TOKEN'] = decodeURIComponent(token);
-    }
+    
     const response = await axiosInstance.post('/api/login', {
       email: email.value,
       password: password.value

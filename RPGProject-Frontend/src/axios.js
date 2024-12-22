@@ -9,7 +9,12 @@ export const axiosInstance = axios.create({
         'X-Requested-With': 'XMLHttpRequest'
     }
 });
-axiosInstance.interceptors.request.use(function (config) {
+axiosInstance.interceptors.request.use(async function (config) {
+    if (!config.url.includes('/sanctum/csrf-cookie')) {
+        await axiosInstance.get('/sanctum/csrf-cookie');
+    }
+    
+
     const token = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN'))?.split('=')[1];
     if (token) {
         config.headers['X-XSRF-TOKEN'] = decodeURIComponent(token);
