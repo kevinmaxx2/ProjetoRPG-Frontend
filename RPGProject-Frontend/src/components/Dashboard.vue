@@ -83,9 +83,21 @@ const accessCharacter = (id) => {
   router.push(`/character/${id}`);
 };
 const handleLogout = async () => {
+  console.log('Logout process started')
   try {
-    const response = await axiosInstance.post('/api/logout');
-    router.push('/')
+    console.log('Sending logout request to server')
+    await axiosInstance.post('/api/logout');
+    console.log('Logout response: ', response.data);
+
+    console.log('Clearing local storage');
+    localStorage.removeItem('user');
+    console.log('Attempting to redirect to homepage');
+
+    window.location.href = '/';
+
+    setTimeout(() => {
+      console.log('Current location after attempted redirect:', window.location.href);
+    }, 1000);
   } catch (err) {
     error.value = 'Failed to logout. Please try again.';
     console.error('Logout error:', err);

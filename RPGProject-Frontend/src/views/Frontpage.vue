@@ -4,26 +4,45 @@
       <h1>RPG Character Sheet Creator</h1>
     </header>
     <main>
+      <Alert
+      :show="alertInfo.show"
+      :type="alertInfo.type"
+      :message="alertInfo.message"
+      @close="closeAlert"
+      />
       <p>Create and manage your RPG characters with ease!</p>
       <div class="auth-buttons">
-        <button @click="openLoginModal" class="btn btn-primary">Login</button>
-        <button @click="openRegisterModal" class="btn btn-secondary">Register</button>
+        <button @click="openLoginModal" class="btn btn-primary" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner"></span>
+          {{  isLoading ? 'Loading...' : 'Login' }}
+        </button>
+        <button @click="openRegisterModal" class="btn btn-secondary" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner"></span>
+          {{ isLoading ? 'Loading...' : 'Register' }}
+        </button>
       </div>
     </main>
 
     <Login v-if="isLoginModalOpen"
-     @close="closeLoginModal" />
+     @close="closeLoginModal"
+     @login-sucess="handleLoginSucess"
+     @login-error="handleLoginError" />
     <Register v-if="isRegisterModalOpen" 
-     @close="closeRegisterModal" />
+     @close="closeRegisterModal"
+     @register-sucess="handleRegisterSucess"
+     @register-error="handleRegisterError" />
   </div>
 </template>
 <script setup>
 import { ref } from 'vue';
 import Login from '@/components/Modals/Login.vue'
 import Register from '@/components/Modals/Register.vue';
+import Alert from '@/components/Alert.vue';
 
 const isLoginModalOpen = ref(false)
 const isRegisterModalOpen = ref(false)
+const isLoading = ref(false)
+const alertInfo = ref({ show: false, type: 'info', message: ''})
 
 const openLoginModal = () => {
   isLoginModalOpen.value = true
@@ -38,6 +57,32 @@ const closeRegisterModal = () => {
   isRegisterModalOpen.value = false
 }
 
+const showAlert = (type, message) => {
+  alertInfo.value = { show: true, type, message }
+  setTimeout(() => {
+    closeAlert()
+  }, 5000)
+}
+const closeAlert = () => {
+  alertInfo.value.show = false
+}
+
+const handleLoginSucess = () => {
+  closeLoginModal()
+  showAlert('sucess', 'Login sucessful!')
+}
+
+const handleLoginError = (error) => {
+  showAlert('error', `Login Failed: ${error}`)
+}
+
+const handleRegisterSucess = () => {
+  closeRegisterModal()
+  showAlert('sucess', 'Registration sucessful!')
+}
+const handleRegisterError = (error) => {
+  showAlert('error', `Register failed: ${error}`)
+}
 </script>
 
 <style scoped>
@@ -168,5 +213,23 @@ p {
     width: 100%;
     margin-bottom: 1rem;
   }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 10px
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed
 }
 </style>
