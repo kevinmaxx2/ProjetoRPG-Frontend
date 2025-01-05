@@ -29,16 +29,15 @@
           </div>
           <div v-else class="no-characters">
             <p>You don't have any characters yet.</p>
-            <button @click="navigateToCharacterCreation" class="btn btn-primary">
+            <button @click="openCharacterCreationModal" class="btn btn-primary">
               Create New Character
             </button>
+            <CharacterCreation
+          v-if="isCharacterCreationModalVisible"
+          @close="closeCharacterCreationModal"
+          @submit="handleCharacterSubmit"
+        />
           </div>
-        </section>
-        <section v-if="characters.length > 0" class="create-character">
-          <button @click="navigateToCharacterCreation" class="btn btn-primary">
-            Create New Character
-          </button>
-
         </section>
       </main>
     </div>
@@ -51,17 +50,13 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { axiosInstance } from '@/axios';
+import CharacterCreation from './Modals/CharacterCreation.vue';
 
 const error = ref('');
 
 const router = useRouter();
 
-const characters = ref([
-  { id: 1, name: 'Eldrin the Wise', level: 5, xp: 2500, class: 'Wizard' },
-  { id: 2, name: 'Thora Ironheart', level: 3, xp: 1200, class: 'Warrior' },
-  { id: 3, name: 'Zephyr Swiftwind', level: 4, xp: 1800, class: 'Rogue' },
-  { id: 4, name: 'Grimlock the Destroyer', level: 6, xp: 3500, class: 'Barbarian' },
-]);
+const characters = ref([]);
 
 const currentIndex = ref(0);
 
@@ -75,9 +70,14 @@ const prevCharacter = () => {
   currentIndex.value = (currentIndex.value - 1 + characters.value.length) % characters.value.length;
 };
 
-const navigateToCharacterCreation = () => {
-  router.push('/character-creation');
-};
+const isCharacterCreationModalVisible = ref(false)
+
+const openCharacterCreationModal = () => {
+  isCharacterCreationModalVisible.value = true
+}
+const closeCharacterCreationModal = () => {
+  isCharacterCreationModalVisible.value = false
+}
 
 const accessCharacter = (id) => {
   router.push(`/character/${id}`);
@@ -91,6 +91,9 @@ const handleLogout = async () => {
     console.error('Logout error:', err);
   }
 };
+const handleCharacterSubmit = (characterData) => {
+  console.log('Submitted character: ', characterData)
+}
 </script>
 
 <style scoped>
