@@ -53,7 +53,6 @@
   <script setup>
   import { reactive, computed, ref } from 'vue'
   import { axiosInstance } from '@/axios'
-  import { errorMessages } from 'vue/compiler-sfc'
 
   const errors = ref({})
   const isLoading = ref(false)
@@ -112,7 +111,7 @@ const submitCharacter = async () => {
             wisdom: character.attributes.Wisdom,
             constitution: character.attributes.Constitution
           })
-          emit('submit', response.data)
+          emit('submit', response.data.character)
           emit('close')
         } catch (error) {
           console.log('Error creating character:', error)

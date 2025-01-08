@@ -18,8 +18,8 @@
               <h3>{{ currentCharacter.name }}</h3>
               <p>Level: {{ currentCharacter.level }}</p>
               <p>XP: {{ currentCharacter.xp }}</p>
-              <p>Class: {{ currentCharacter.class }}</p>
-              <button @click="accessCharacter(currentCharacter.id)" class="btn btn-secondary">
+              <p>Class: {{ currentCharacter.chronicle }}</p>
+              <button @click="accessCharacter(currentCharacter.unique_id)" class="btn btn-secondary">
                 Access Character
               </button>
             </div>
@@ -32,33 +32,31 @@
             <button @click="openCharacterCreationModal" class="btn btn-primary">
               Create New Character
             </button>
-            <CharacterCreation
-          v-if="isCharacterCreationModalVisible"
-          @close="closeCharacterCreationModal"
-          @submit="handleCharacterSubmit"
-        />
           </div>
         </section>
       </main>
     </div>
+    <CharacterCreation
+    v-if="isCharacterCreationModalVisible"
+    @close="closeCharacterCreationModal"
+    @submit="handleCharacterSubmit"
+    @create-error="handleCharacterError"
+    />
   </div>
 
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { axiosInstance } from '@/axios';
 import CharacterCreation from './Modals/CharacterCreation.vue';
+import axios from 'axios';
 
 const error = ref('');
-
-const router = useRouter();
-
 const characters = ref([]);
-
 const currentIndex = ref(0);
+const isCharacterCreationModalVisible = ref(false);
 
 const currentCharacter = computed(() => characters.value[currentIndex.value]);
 
@@ -70,8 +68,6 @@ const prevCharacter = () => {
   currentIndex.value = (currentIndex.value - 1 + characters.value.length) % characters.value.length;
 };
 
-const isCharacterCreationModalVisible = ref(false)
-
 const openCharacterCreationModal = () => {
   isCharacterCreationModalVisible.value = true
 }
@@ -80,7 +76,7 @@ const closeCharacterCreationModal = () => {
 }
 
 const accessCharacter = (id) => {
-  router.push(`/character/${id}`);
+  window.location.href = `/character/${id}`;
 };
 const handleLogout = async () => {
   console.log('Logout process started')
@@ -104,8 +100,22 @@ const handleLogout = async () => {
   }
 };
 const handleCharacterSubmit = (characterData) => {
-  console.log('Submitted character: ', characterData)
+  characters.value.push(characterData);
+  closeCharacterCreationModal
 }
+const handleCharacterError = (characterData) => {
+  console.log('Character creation errors:', errors)
+}
+const fetchCharacters = async () => {
+  try {
+    const response = await axiosInstance.get('/api/characters');
+    characters.value = response.data;
+  } catch (err) {
+    console.error('Error fetching characters', err);
+    error.value = 'Failed to fetch characters. Please try again';
+  }
+};
+onMounted(fetchCharacters);
 </script>
 
 <style scoped>
