@@ -7,19 +7,23 @@
           <div class="form-group">
             <label for="name">Name:</label>
             <input type="text" id="name" v-model="character.name" required>
+            <div v-if="errors.name" class="error-message">{{ errors.name[0] }}</div>
           </div>
           <div class="form-group">
             <label for="chronicle">Chronicle:</label>
             <input type="text" id="chronicle" v-model="character.chronicle" required>
+            <div v-if="errors.chronicle" class="error-message">{{ errors.chronicle[0] }}</div>
           </div>
           <div class="form-row">
           <div class="form-group half-width">
             <label for="level">Level:</label>
             <input type="number" id="level" v-model="character.level" min="1" required>
+            <div v-if="errors.level" class="error-message">{{ errors.level }}</div>
           </div>
           <div class="form-group half-width">
             <label for="xp">XP: </label>
             <input type="number" id="xp" v-model="character.xp" min="0" required>
+            <div v-if="errors.xp" class="error-message">{{ errors.xp }}</div>
           </div>
         </div>
           <div class="attributes">
@@ -33,9 +37,12 @@
               </div>
             </div>
           </div>
+          <div v-if="errors.general" class="error-message">{{ errors.general[0] }}</div>
           <div class="form-actions">
-            <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
-            <button type="submit" class="btn btn-primary" :disabled="!isFormValid">Create</button>
+            <button type="button" class="btn btn-secondary" @click="$emit('close')" :disabled="isLoading">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="isLoading || !isFormValid" >
+              <span v-if="isLoading" class="spinner">{{ isLoading ? 'Creating...' : 'Create' }}</span>
+            </button>
           </div>
         </form>
       </div>
@@ -44,9 +51,14 @@
   </template>
 
   <script setup>
-  import { reactive, computed } from 'vue'
+  import { reactive, computed, ref } from 'vue'
+  import { axiosInstance } from '@/axios'
+  import { errorMessages } from 'vue/compiler-sfc'
 
-  const emit = defineEmits(['close', 'submit'])
+  const errors = ref({})
+  const isLoading = ref(false)
+
+  const emit = defineEmits(['close', 'submit', 'create-error'])
 
   const character = reactive({
     name: '',
@@ -83,9 +95,36 @@ const decrementAttribute = (attr) => {
     }
 }
 
-const submitCharacter = () => {
+const submitCharacter = async () => {
     if (isFormValid.value) {
-        emit('submit', { ...character})
+        try {
+          isLoading.value = true
+          errors.value = {}
+          const response = await axiosInstance.post('/api/characters', {
+            name: character.name,
+            chronicle: character.chronicle,
+            level: character.level,
+            xp: character.xp,
+            intelligence: character.attributes.Intelligence,
+            dexterity: character.attributes.Dexterity,
+            charisma: character.attributes.Charisma,
+            strength: character.attributes.Strength,
+            wisdom: character.attributes.Wisdom,
+            constitution: character.attributes.Constitution
+          })
+          emit('submit', response.data)
+          emit('close')
+        } catch (error) {
+          console.log('Error creating character:', error)
+          if (error.response?.status === 422) {
+            errors.value = error.response.data.errors
+          } else {
+            errors.value = { general: ['An unexpected error occured. Please try again.']}
+          }
+          emit('create-error', errors.value)
+        } finally {
+          isLoading.value = false
+        }
     }
 }
 </script>
@@ -293,5 +332,28 @@ input:focus {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
   }
+}
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: rgba(255, 0, 0, 0.2);
+  color: #ff6b6b;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 </style>
